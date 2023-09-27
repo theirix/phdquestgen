@@ -1,0 +1,10 @@
+[event] Write first chapter
+Write second chapter
+Write third chapter
+Write second chapter
+[miniboss] Pre-defence
+---
+Draft
+Pre-final
+[event] Approvement
+[event, boss] Defence
