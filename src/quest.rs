@@ -1,5 +1,5 @@
 use crate::parser::{parse, Line, Option as QuestOption, Stage};
-use log::{info, debug};
+use log::{debug, info};
 use std::convert::AsRef;
 
 fn image(option: &QuestOption) -> String {
@@ -24,26 +24,32 @@ fn html_stage(stage: Stage) -> String {
         .collect::<Vec<String>>()
         .join(" ");
     format!(
-        r#"<div class="stage">
-        {}
-        <span class="quest-action">{}</span>
-    </div>"#,
+        r#"
+<div class="stage">
+    {}
+    <span class="quest-action">{}</span>
+</div>"#,
         images, stage.action
     )
+}
+
+fn here_stage() -> String {
+    r#"
+<div class="stage-now">
+    YOU ARE HERE
+</div>"#
+        .to_string()
 }
 
 pub fn generate<S: AsRef<str>>(quest_string: S) -> anyhow::Result<String> {
     let quest = parse(quest_string.as_ref().to_string())?;
     let mut output: Vec<String> = vec![];
     for line in quest.lines {
-        match line {
-            Line::Now => {
-                output.push("YOU ARE HERE".into());
-            }
-            Line::Stage(stage) => {
-                output.push(html_stage(stage));
-            }
-        }
+        let html_code = match line {
+            Line::Now => here_stage(),
+            Line::Stage(stage) => html_stage(stage),
+        };
+        output.push(html_code);
     }
     let res = output.join("\n");
     debug!("Generated: {}", &res);
