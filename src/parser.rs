@@ -54,11 +54,17 @@ pub struct Quest {
     pub lines: Vec<Line>,
 }
 
+fn parse_other_option(input: &str) -> IResult<&str, Option> {
+    let (remaining, s) = alphanumeric1(input)?;
+    Ok((remaining, Option::Other(s.to_string())))
+}
+
 fn parse_option(input: &str) -> IResult<&str, Option> {
     alt((
         value(Option::Event, tag("event")),
         value(Option::Boss, tag("boss")),
         value(Option::Miniboss, tag("miniboss")),
+        parse_other_option,
     ))(input)
 }
 
@@ -90,7 +96,7 @@ fn parse_stage(input: &str) -> IResult<&str, Stage> {
 fn parse_line(input: &str) -> IResult<&str, Line> {
     alt((
         value(Line::Now, tuple((multispace0, tag("---")))),
-        map(parse_stage, |st| Line::Stage(st)),
+        map(parse_stage, Line::Stage),
     ))(input)
 }
 
@@ -102,7 +108,7 @@ fn parse_quest(input: &str) -> IResult<&str, Quest> {
 pub fn parse(quest_string: String) -> anyhow::Result<Quest> {
     let (rem, quest) = parse_quest(quest_string.as_str()).unwrap();
     info!("Rem: {}. Data: {:?}", &rem, &quest);
-    if rem.len() > 0 {
+    if !rem.is_empty() {
         Err(anyhow!(format!("Parse failed with remaining {}", rem)))
     } else {
         Ok(quest)
@@ -205,5 +211,23 @@ mod tests {
         } else {
             assert!(false);
         }
+    }
+
+    #[test]
+    fn test_parse_unknown_option() {
+        let (remaining, line) = parse_line("[unknown,boss] Foo bar".into()).expect("parsed");
+        assert_eq!(remaining.len(), 0);
+        match line {
+            Line::Stage(stage) => {
+                assert_eq!(stage.action, "Foo bar");
+                assert_eq!(
+                    stage.options,
+                    Options {
+                        options: vec![Option::Other("unknown".into()), Option::Boss]
+                    }
+                );
+            }
+            _ => assert!(false),
+        };
     }
 }
