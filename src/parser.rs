@@ -29,6 +29,8 @@ pub enum Option {
     Event,
     Miniboss,
     Boss,
+    Fail,
+    Research,
     Other(String),
 }
 
@@ -64,6 +66,8 @@ fn parse_option(input: &str) -> IResult<&str, Option> {
         value(Option::Event, tag("event")),
         value(Option::Boss, tag("boss")),
         value(Option::Miniboss, tag("miniboss")),
+        value(Option::Fail, tag("fail")),
+        value(Option::Research, tag("research")),
         parse_other_option,
     ))(input)
 }
