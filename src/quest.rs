@@ -66,6 +66,7 @@ fn here_stage() -> String {
     r#"
 <div class="stage-now">
     YOU ARE HERE
+    (as of {{ site.time | date: '%d.%m.%Y' }})
 </div>"#
         .to_string()
 }
